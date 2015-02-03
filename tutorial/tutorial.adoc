@@ -14,16 +14,31 @@ In this simple tutorial, we don't do much data binding, but you can imagine many
 
 In this chapter, we won't step through the code as slowly as in chapter one, having you write and test a piece at a time. Instead, we'll have you download and peruse the code all at once, and explain it as a whole. Because no functionality has changed -- the code around capturing and saving location data is the same. We are simply re-organizing code into the AngularJS framework and adding UIX richness.
 
+All the code for this tutorial can be forked from GitHub from https://github.com/cloudant-labs/location-tracker-couchapp[this repository]. To download the code to your computer, run this from the command line:
+
+[source,bash]
+git clone https://github.com/cloudant-labs/location-tracker-angular.git
+
+****
+NOTE: If you are new to GitHub, https://help.github.com/articles/set-up-git/[get set up with these instructions]. 
+**** 
+
 == Angular application overview
 
-The way an Angular app gets initialized is by including the Angular Javascript code in your web page, and then putting the custom attribute `ng-app` on an element in your HTML. Angular only works on the HTML descended from this element, so you can have parts of your web page that don't depend at all on the framework. Usually, however, developers choose to have the whole page controlled by Angular, and therefore you'll find `ng-app` attached to the `html` or `body` element. In our case we put it on the body:
+The way an Angular app gets initialized is by including the Angular Javascript code in your web page, and then putting the custom attribute `ng-app` on an element in your HTML. Angular only works on the HTML descended from this element, so you can have parts of your web page that don't depend at all on the framework. Usually, however, developers choose to have the whole page controlled by Angular, and therefore you'll find `ng-app` attached to the `html` or `body` element. In our case we put it on the body in the `index.html` file:
 
 [source,html]
 ----
 <body ng-app="locationTrackingApp">
 ----
 
-The value of the `ng-app` attribute is the module to use. And this is found in the Javascript file `app.js`, which was also included in the web page. `App.js` is the heart of any Angular app. As stated earlier, this is not a standalone Angular tutorial, so we'll just hit the high points of how functionality is laid out in the app. Looking at `app.js` a few main concepts stick out:
+The value of the `ng-app` attribute is the module to use. And this is found in the Javascript file `app.js`, which was also included in the web page (and found in the `scripts` directory. App.js is the heart of any Angular app. As stated earlier, this is not a standalone Angular tutorial, so we'll just hit the high points of how functionality is laid out in the app. 
+
+****
+NOTE: Some good AngularJS tutorials are https://docs.angularjs.org/tutorial/[the official one], http://campus.codeschool.com/courses/shaping-up-with-angular-js/intro[Shaping up with Angular.JS] and  http://www.revillweb.com/tutorials/angularjs-in-30-minutes-angularjs-tutorial/[Learn AngularJS in 30 minutes]
+****
+
+Looking at `app.js` a few main concepts stick out:
 
 . *value* definitions, which are basically global variables that can be exposed to controllers, 
 . *routes* in `.config(['$routeProvider'...` define what HTML is included (`templateUrl`) and what Javascript is run (`controller`) when certain URLs are requested 
