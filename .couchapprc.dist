@@ -1,0 +1,11 @@
+# rename this file to .couchapprc and replace $USERNAME and $PASSWORD with real values
+{
+"env": {
+	"local": {
+		"db": "http://localhost:5984/locationtracker"
+	},
+	"remote": {
+		"db": "http://$USERNAME:$PASSWORD@$USERNAME.cloudant.com/locationtracker"
+	}
+}
+}
