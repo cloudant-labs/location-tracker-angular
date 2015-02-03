@@ -1,4 +1,6 @@
-= Tutorial 2
+image:https://cloudant.com/wp-content/themes/cloudant/images/ibm_cloudant.png["IBM Cloudant"]
+
+= Location Tracker Chapter 2: Angular.JS
 
 == Intro
 
@@ -120,7 +122,7 @@ If the process was successful, we see some metadata about how many documents wer
 |*templateUrl* |location-welcome.html |location-tracking.html |location-savedata.html |location-success.html |tutorial2-map.html |location-error.html 
 |*controller* |n/a |locationTrackingController |locationTrackingSaveDataController |locationTrackingSuccessController |mapResultController |locationTrackingErrorController
 |*description* |static introductory message |captures device location in PouchDB while showing current location on a map |Saves location data to Cloudant by replicating from the local PouchDB to a remote Cloudant database account |Shows metadata about the successful replication |Shows a map of all location data in the database |Shows metadata about a failed replication
-| |image:graphics2/welcome_button_sm.png[] |image:graphics2/tracking_sm.png[] |image:graphics2/saving_sm.png[] |image:graphics2/success_sm.png[] |image:graphics2/map_sm.png[] |
+| |image:welcome_button_sm.png[] |image:graphics/tracking_sm.png[] |image:graphics/saving_sm.png[] |image:success_sm.png[] |image:graphics/map_sm.png[] |
 |=====
 
 
