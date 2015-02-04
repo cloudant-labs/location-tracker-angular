@@ -7,14 +7,10 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
 
 .value("map", {})
     .value("watchID", null)
-    .value("remotedb", 'https://rajsingh:genjisan@rajsingh.cloudant.com/locationtracker')
-    // .value("remotedb", 'https://USERNAME:PASSWORD@USERNAME.cloudant.com/locationtracker')
+    .value("remotedb", 'https://USERNAME:PASSWORD@USERNAME.cloudant.com/locationtracker')
     .value("num", 0)
     .value("successMessage", {})
     .value("errorMessage", "error")
-    .value("trackingMapInitialized", false)
-    .value("resultMapInitialized", false)
-
 
 /* ROUTES */
 
@@ -22,7 +18,8 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
 
     $routeProvider.
     when('/welcome', {
-        templateUrl: 'welcome.html'
+        templateUrl: 'welcome.html',
+        controller: 'locationWelcomeController'
     }).
     when('/tracking', {
         templateUrl: 'tracking.html',
@@ -41,7 +38,7 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
         controller: 'locationTrackingErrorController'
     }).
     when('/map', {
-        templateUrl: 'map.html',
+        templateUrl: 'map-result.html',
         controller: 'mapResultController'
     }).
     otherwise({
@@ -51,63 +48,85 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
 }])
 
 
-/* location-tracking.html Controller */
+/* welcome.html Controller */
 
-.controller('locationTrackingController', function($scope, map, watchID, pouchLocal, num, trackingMapInitialized) {
+.controller('locationWelcomeController', function($scope) {
+    $scope.transEnter = function() {}
+    $scope.transLeave = function() {};
+})
 
-    var osmUrl = 'https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png';
-    var osmAttrib = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-        '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ';
-    var osm = new L.TileLayer(osmUrl, {
-        attribution: osmAttrib,
-        id: 'examples.map-i875mjb7'
-    });
-    if (!trackingMapInitialized) {
-        var map = new L.Map('map', {
-            layers: [osm],
-            zoom: 18,
-            zoomControl: true
-        });
-        trackingMapInitialized = true;
-    }
+
+/* tracking.html Controller */
+
+.controller('locationTrackingController', function($scope, map, watchID, pouchLocal, num) {
+
+    var mapTracker;
+    var lc;
     var last_lon = 0;
     var last_lat = 0;
     var session_id = guid();
     var db = pouchLocal;
+    var watchID = {};
 
-    // add location control to global name space for testing only
-    // on a production site, omit the "lc = "!
-    lc = L.control.locate({
-        follow: true,
-        strings: {
-            title: "Show me where I am, yo!"
+
+    $scope.transEnter = function() {
+        if (navigator.geolocation) {
+
+            var osmUrl = 'https://{s}.tiles.mapbox.com/v4/seanbarclay.l4eh1584/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoic2VhbmJhcmNsYXkiLCJhIjoiczRkNnhOSSJ9.YzW0U9hStsqXMH-GNSxfJw';
+            var osmAttrib = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                'Imagery © <a href="http://mapbox.com">Mapbox</a>';
+            var osm = new L.TileLayer(osmUrl, {
+                attribution: osmAttrib
+                    // ,
+                    // id: 'examples.map-i875mjb7'
+            });
+
+            mapTracker = new L.Map('map', {
+                layers: [osm],
+                zoom: 18,
+                zoomControl: true
+            });
+
+            lc = L.control.locate({
+                follow: true,
+                strings: {
+                    title: "Show me where I am, yo!"
+                }
+            }).addTo(mapTracker);
+
+            mapTracker.locate({
+                setView: true,
+                maxZoom: 20
+            });
+
+            geoLoc = navigator.geolocation;
+            watchID = geoLoc.watchPosition(doWatch, watchError);
+
+            mapTracker.on('locationfound', onLocationFound);
+            mapTracker.on('startfollowing', function() {
+                mapTracker.on('dragstart', lc._stopFollowing, lc);
+            }).on('stopfollowing', function() {
+                mapTracker.off('dragstart', lc._stopFollowing, lc);
+            });
+
+        } else {
+            alert("Geolocation IS NOT available!");
         }
-    }).addTo(map);
-    /* */
+    };
 
-    map.on('startfollowing', function() {
-        map.on('dragstart', lc._stopFollowing, lc);
-    }).on('stopfollowing', function() {
-        map.off('dragstart', lc._stopFollowing, lc);
-    });
-
-    if (navigator.geolocation) {
-        console.log("Geolocation is available");
-    } else {
-        alert("Geolocation IS NOT available!");
-        document.getElementById('starter').disabled = true;
-    }
+    $scope.transLeave = function() {
+        geoLoc.clearWatch(watchID);
+        mapTracker.remove();
+    };
 
     function onLocationFound(e) {
-        console.log("onLocationFound");
         var radius = e.accuracy / 2;
-        L.marker(e.latlng).addTo(map);
-        lc.start();
-    }
+        L.marker(e.latlng).addTo(mapTracker).bindPopup(
+            '<span>Latitude&nbsp;&nbsp;</span>' + e.latlng.lat +
+            '<br><span>Longitude&nbsp;&nbsp;</span>' + e.latlng.lng);
 
-    function onLocationError(e) {
-        console.log("onLocationError");
-        alert("Rut ro... " + e.message);
+        lc.start();
     }
 
     function doWatch(position) {
@@ -115,8 +134,26 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
         var lat = Number(Math.round(position.coords.latitude + 'e' + 4) + 'e-' + 4);
         if ((lon == last_lon) && (lat == last_lat)) return null;
 
+        if (last_lon == 0) {
+            last_lon = lon;
+            last_lat = lat;
+        }
+
+        var pointA = new L.LatLng(last_lat, last_lon);
+        var pointB = new L.LatLng(lat, lon);
+        var pointList = [pointA, pointB];
+
         last_lon = lon;
         last_lat = lat;
+
+        var firstpolyline = new L.Polyline(pointList, {
+            color: '#e5603d',
+            weight: 4,
+            opacity: 0.64,
+            smoothFactor: 1
+        });
+        firstpolyline.addTo(mapTracker);
+
         var coord = {
             "type": "Feature",
             "geometry": {
@@ -138,8 +175,7 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
                 if (err) {
                     console.log('ERROR: ' + err);
                 }
-
-                console.log('GOT: ' + JSON.stringify(doc));
+                // console.log('GOT: ' + JSON.stringify(doc));
                 $('.longitude-coordinate').text(doc.geometry.coordinates[0]);
                 $('.latitude-coordinate').text(doc.geometry.coordinates[1]);
             });
@@ -165,121 +201,146 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
         }
         return _p8() + _p8(true) + _p8(true) + _p8();
     }
-
-    $('.longitude-coordinate, .latitude-coordinate').text("updating...");
-    watchID = navigator.geolocation.watchPosition(doWatch, watchError);
-    map.on('locationfound', onLocationFound);
-    map.on('locationerror', onLocationError);
-    map.locate({
-        setView: true,
-        maxZoom: 20
-    });
 })
 
 .controller('locationTrackingSaveDataController', function($scope, map, watchID, pouchLocal, remotedb, successMessage, errorMessage) {
 
-    navigator.geolocation.clearWatch(watchID);
+    var timer;
 
-    db = pouchLocal;
+    $scope.transEnter = function() {
+        navigator.geolocation.clearWatch(watchID);
+        db = pouchLocal;
 
-    setInterval(function() {
-        $(".dot-anim")
-            .velocity("transition.slideUpBigIn", {
-                drag: true
-            })
-            .delay(750)
-            .velocity({
-                opacity: 0
-            }, 750)
-    }, 2000);
+        timer = setInterval(function() {
+            $(".dot-anim")
+                .velocity("transition.slideUpBigIn", {
+                    drag: true
+                })
+                .delay(750)
+                .velocity({
+                    opacity: 0
+                }, 750)
+        }, 2000);
 
-    db.replicate.to(remotedb).on('complete', function(info) {
+        db.replicate.to(remotedb).on('complete', function(info) {
+            var timer = setTimeout(function() {
+                successMessage.docs_written = info.docs_written;
+                successMessage.start_time = info.start_time;
+                window.location = "#/success";
+            }, 2000)
 
-        console.log("replicate complete");
+        }).on('error', function(err) {
+            console.log('error replicating: ' + err);
 
-        setTimeout(function() {
-            successMessage.docs_written = info.docs_written;
-            successMessage.start_time = info.start_time;
-            window.location = "#/success";
-        }, 2000)
+            errorMessage = 'error replicating: ' + err;
+            window.location = "#/error";
+        });
+    };
 
-    }).on('error', function(err) {
-        console.log('error replicating: ' + err);
-
-        errorMessage = 'error replicating: ' + err;
-        window.location = "#/error";
-    });
+    $scope.transLeave = function() {
+        console.log("transLeave");
+        clearInterval(timer);
+    };
 })
 
 
 .controller('locationTrackingSuccessController', function($scope, successMessage) {
-
-    console.log("locationTrackingSuccessController");
-    console.log(successMessage);
-
     $scope.docs_written = successMessage.docs_written;
     $scope.start_time = successMessage.start_time;
+
+    $scope.transEnter = function() {};
+    $scope.transLeave = function() {};
 })
 
 .controller('locationTrackingErrorController', function($scope, errorMessage) {
-
-    console.log("locationTrackingErrorController");
-    console.log(errorMessage);
-
     $scope.error_message = errorMessage;
+
+    $scope.transEnter = function() {};
+    $scope.transLeave = function() {};
 })
 
 
-.controller('mapResultController', function($scope, pouchResult, resultMapInitialized) {
+.controller('mapResultController', function($scope, pouchResult) {
+        var mapResult = {};
 
-        console.log("mapResultController");
+        $scope.transEnter = function() {
+            var db = pouchResult;
 
-        console.log(pouchResult);
+            db.changes({
+                include_docs: true
+            }).on('change', updateMovingLayer);
 
-        var db = pouchResult;
-        db.changes({
-            include_docs: true,
-            live: true
-        }).on('change', updateMovingLayer);
-
-        if (!resultMapInitialized) {
-            var mapResult = new L.Map('mapResult');
+            mapResult = new L.Map('mapResult');
             resultMapInitialized = true;
-        }
 
-        L.tileLayer('https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png', {
-            maxZoom: 20,
-            attribution: 'Map data &copy; ' +
-                '<a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-            detectRetina: true,
-            id: 'examples.map-20v6611k'
-        }).addTo(mapResult);
+            L.tileLayer('https://{s}.tiles.mapbox.com/v4/seanbarclay.l4eh1584/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoic2VhbmJhcmNsYXkiLCJhIjoiczRkNnhOSSJ9.YzW0U9hStsqXMH-GNSxfJw', {
+                maxZoom: 20,
+                attribution: 'Map data &copy; ' +
+                    '<a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+                    '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+                detectRetina: true
+                    // ,
+                    // id: 'examples.map-20v6611k'
+            }).addTo(mapResult);
 
-        var movementLayer = L.geoJson(null, {
-            pointToLayer: function(feature, latlng) {
-                markeroptions = {
-                    icon: L.icon({
-                        iconUrl: 'script/images/marker-icon.png',
-                        iconRetinaUrl: 'script/images/marker-icon-2x.png',
-                        iconSize: [25, 41],
-                        iconAnchor: [10, 10],
-                        shadowURL: 'script/images/marker-icon-shadow.png',
-                        shadowRetinaURL: 'script/images/marker-icon-shadow-2x.png',
-                        shadowSize: [41, 41],
-                        shadowAnchor: [10, 10]
-                    })
+
+            var last_lat = 0;
+            var last_lon = 0;
+
+
+            var movementLayer = L.geoJson(null, {
+                pointToLayer: function(feature, latlng) {
+
+                    if (last_lat == 0) {
+                        last_lat = latlng.lat;
+                        last_lon = latlng.lng;
+                    }
+
+                    var pointA = [last_lat, last_lon];
+                    var pointB = [latlng.lat, latlng.lng];
+                    var pointList = [pointA, pointB];
+
+                    last_lat = latlng.lat;
+                    last_lon = latlng.lng;
+
+                    var firstpolyline = new L.Polyline(pointList, {
+                        color: '#e5603d',
+                        weight: 4,
+                        opacity: 0.64,
+                        smoothFactor: 1
+                    });
+                    firstpolyline.addTo(mapResult);
+
+                    markeroptions = {
+                        icon: L.icon({
+                            iconUrl: 'js/images/marker-icon.png',
+                            iconRetinaUrl: 'js/images/marker-icon-blue-2x.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [10, 10],
+                            shadowURL: 'js/images/marker-icon-shadow.png',
+                            shadowRetinaURL: 'js/images/marker-icon-shadow-2x.png',
+                            shadowSize: [41, 41],
+                            shadowAnchor: [10, 10]
+                        })
+                    }
+                    return L.marker(latlng, markeroptions).bindPopup(
+                        '<span>Latitude&nbsp;&nbsp;</span>' + latlng.lat +
+                        '<br><span>Longitude&nbsp;&nbsp;</span>' + latlng.lng);
                 }
-                return L.marker(latlng, markeroptions);
-            }
-        }).addTo(mapResult);
+            }).addTo(mapResult);
 
-        function updateMovingLayer(change) {
-            if (!change.doc._deleted && change.doc.type == 'Feature') {
-                movementLayer.addData(change.doc);
-                mapResult.fitBounds(movementLayer.getBounds());
+            function updateMovingLayer(change) {
+                if (!change.doc._deleted && change.doc.type == 'Feature') {
+                    movementLayer.addData(change.doc);
+                    mapResult.fitBounds(movementLayer.getBounds());
+                }
             }
-        }
+        };
+
+        $scope.transLeave = function() {
+            mapResult.remove();
+        };
+
     })
     .factory('pouchLocal', [function() {
         var db = new PouchDB('localdb');
@@ -293,23 +354,24 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
 
 /* Directive used on controller items to allow for multiple trans in/out */
 
-.directive('locationdirective', ['$animate', '$timeout',
+.directive('animationdirective', ['$animate', '$timeout',
     function($animate, $timeout) {
-        console.log("directive");
         return {
             restrict: 'A',
             link: function(scope, element, attrs) {
-                console.log("directive 2");
-                console.log(scope, element, attrs);
+
+                $('.trans-button .btn').hover(
+                    function() {
+                        $(this).addClass('btnHover')
+                    },
+                    function() {
+                        $(this).removeClass('btnHover')
+                    }
+                );
+
                 $timeout(function() {
-
-                    console.log('directive triggering inner animation');
-                    $animate.addClass(element, 'anim-page-transition-js', function() {
-                        console.log('animation complete!');
-                    });
-
+                    $animate.addClass(element, 'anim-page-transition-js');
                 }, 10);
-
             }
         }
     }
@@ -318,10 +380,10 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
 .animation('.anim-page-transition-js',
     function() {
         return {
-            enter: function(element, done) {
-                console.log('route enter animation triggered');
 
+            enter: function(element, done) {
                 var _element = $(element);
+                _element.addClass("visible");
                 $.each([".trans-step1", ".trans-step2", ".trans-step3", ".trans-step4"], function(index, value) {
                     _element.find(value)
                         .velocity({
@@ -334,7 +396,7 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
                             opacity: 1,
                             translateY: "0"
                         }, {
-                            easing: "easeInOutQuad", //[0.670, 0.010, 0.090, 0.970],
+                            easing: "easeInOutQuad",
                             duration: 1000 + (index * 200),
                             delay: 1000 + (index * 100),
                             queue: false,
@@ -355,13 +417,13 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
                         opacity: 1,
                         translateY: "0%"
                     }, {
-                        easing: "easeInOutQuad", //[0.670, 0.010, 0.090, 0.970],
+                        easing: "easeInOutQuad",
                         duration: 500,
                         delay: 1000,
                         queue: false,
                         complete: function(elements) {
                             console.log('enter complete');
-                            done();
+                            angular.element(_element).scope().transEnter();
                         }
                     });
 
@@ -376,21 +438,18 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
                         opacity: 1,
                         translateY: "0%"
                     }, {
-                        easing: "easeInOutQuad", //[0.670, 0.010, 0.090, 0.970],
+                        easing: "easeInOutQuad",
                         delay: 1500,
                         queue: false,
                         complete: function(elements) {
                             console.log('enter trans-button complete');
-                            done();
+
                         }
                     });
-
-
             },
             leave: function(element, done) {
-                console.log('route leave animation triggered');
                 var _element = $(element);
-
+                angular.element(_element).scope().transLeave();
                 _element.find(".trans-button")
                     .velocity({
                         opacity: 1,
@@ -402,15 +461,13 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
                         opacity: 0,
                         translateY: "+100%"
                     }, {
-                        easing: "easeInOutQuad", //[0.670, 0.010, 0.090, 0.970],
+                        easing: "easeInOutQuad",
                         duration: 1500,
                         delay: 0,
                         complete: function(elements) {
                             console.log('leave trans-button complete');
-                            done();
                         }
                     });
-
 
                 $.each([".trans-step1", ".trans-step2", ".trans-step3", ".trans-step4"], function(index, value) {
                     _element.find(value)
@@ -424,7 +481,7 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
                             opacity: 0,
                             translateY: "-200px"
                         }, {
-                            easing: "easeInOutQuad", //[0.670, 0.010, 0.090, 0.970],
+                            easing: "easeInOutQuad",
                             duration: 1000 + (index * 200),
                             delay: (index * 100),
                             queue: false,
@@ -445,15 +502,13 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
                         opacity: 0,
                         translateY: "-100%"
                     }, {
-                        easing: "easeInOutQuad", //[0.670, 0.010, 0.090, 0.970],
+                        easing: "easeInOutQuad",
                         duration: 1000,
                         delay: 1000,
                         queue: false,
-                        // begin: function(elements) {}
                         complete: function(elements) {
                             console.log('leave complete');
                             $(element).remove();
-                            done();
                         }
                     });
             }
