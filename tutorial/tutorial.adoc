@@ -27,6 +27,21 @@ NOTE: If you are new to GitHub, https://help.github.com/articles/set-up-git/[get
 
 == Angular application overview
 
+For starters, let's look at the new Javascripts added to the HEAD
+[source,html]
+----
+<script src="https://code.angularjs.org/1.3.11/angular.min.js"></script>
+<script src="https://code.angularjs.org/1.3.11/angular-route.min.js"></script>
+<script src="https://code.angularjs.org/1.3.11/angular-animate.min.js"></script>
+<script src="//cdn.jsdelivr.net/velocity/1.2.1/velocity.min.js"></script>
+<script src="//cdn.jsdelivr.net/velocity/1.2.1/velocity.ui.min.js"></script>
+----
+
+In order to use Angular, you need the base Angular.min.js framework file. Because we are levaraging routing and animation, both the angular-route.min.js and angular-animate.min.js modules have been added. 
+To allow for fluid transitions and animation control via javascript, http://julian.com/research/velocity/[Velocity.js] has been added. It's setup to work with or without jQuery. It is simply the best of jQuery and CSS transitions combined.  
+
+Both the base velocity.min.js and ui pack velocity.ui.min.js files are used. 
+
 The way an Angular app gets initialized is by including the Angular Javascript code in your web page, and then putting the custom attribute `ng-app` on an element in your HTML. Angular only works on the HTML descended from this element, so you can have parts of your web page that don't depend at all on the framework. Usually, however, developers choose to have the whole page controlled by Angular, and therefore you'll find `ng-app` attached to the `html` or `body` element. In our case we put it on the body in the `index.html` file:
 
 [source,html]
