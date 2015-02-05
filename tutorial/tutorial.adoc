@@ -136,14 +136,33 @@ If the process was successful, we see some metadata about how many documents wer
 [cols="2,2,2,2,2,2,2", frame="topbot"]
 |=====
 |*Route* |/welcome |/tracking |/savedata |/success |/map |/error
-|*templateUrl* |location-welcome.html |location-tracking.html |location-savedata.html |location-success.html |tutorial2-map.html |location-error.html 
+|*templateUrl* |welcome.html |tracking.html |savedata.html |success.html |tutorial2-map.html |location-error.html 
 |*controller* |n/a |locationTrackingController |locationTrackingSaveDataController |locationTrackingSuccessController |mapResultController |locationTrackingErrorController
 |*description* |static introductory message |captures device location in PouchDB while showing current location on a map |Saves location data to Cloudant by replicating from the local PouchDB to a remote Cloudant database account |Shows metadata about the successful replication |Shows a map of all location data in the database |Shows metadata about a failed replication
-|  |image:graphics/welcome_button_sm.png[] |image:graphics/tracking_sm.png[] |image:graphics/saving_sm.png[] |image:graphics/success_sm.png[] |image:graphics/map_sm.png[] |
+| |image:welcome_button_sm.png[] |image:graphics/tracking_sm.png[] |image:graphics/saving_sm.png[] |image:success_sm.png[] |image:graphics/map_sm.png[] |
 |=====
 
 
 == Animating UI changes with the `animationdirective`
+
+This tutorial was broken up into different sections to help developers more easily digest the different functions happening, such as storing data locally, saving it, then displaying the results. Having a asynchronous based single-page app allows us to separate these functions without refreshing the page. 
+
+One of the benefits of Angular when it comes to single-page applications, is that it emits event hooks when ui-views are being transitioned in and out. Specifically, `enter` and `leave`. Rather than having a simple show and hide, animated transitions have been added to help make the experience more fluid as you go through the steps of the application. 
+
+Two key things were used to make the transitions: a reusable directive and the animation module. Animations in AngularJS are completely based on CSS classes. For example, each time a new ui-view component is added, Angular will add a `ng-enter` class name to the element that is being added. When removed it will apply a ng-leave class name.
+
+Directives are helpful in that they attach a specified behavior to that DOM element or even transform the DOM element and its children. The main idea here is that each html page being injected into the ui-view is leveraging the same directive. Therefore, they can take advantage of enter and leave hooks and transition views in and out. 
+
+In order to modify the DOM we use the `link` option. `link` takes a function with the following, `function link(scope, element, attrs) { ... }`. Let's break things down:
+
+`scope` is an Angular scope object.
+`element` is the jqLite-wrapped element that this directive matches.
+`attrs` is a hash object with key-value pairs of normalized attribute names and their corresponding attribute values.
+
+By taking advantage of a custom directive, we can take advantage of the $animate service to handle the transition animations when `enter` and `leave` hooks are triggered. We're using javascript animations using velocity.js to allow for a bit more fine grained control over nested elements, particularly when `leave` is triggered.
+
+The last thing to mention with animations is that there are callbacks in both `enter` and `leave` hooks, that when called will look for `transEnter` or `transLeave`. This way, you can step things out to make the app more efficient. For example, on `locationTrackingController`, we want to be able to smoothly load in the map tiles after the `enter` hook has trigged and only after the page view has transitioned in. Then we want to be able to use the `remove()` function on the map on the `leave` so that we can clear out the events and leaflet map javascript objects. 
+
 
 == Conclusion
 
