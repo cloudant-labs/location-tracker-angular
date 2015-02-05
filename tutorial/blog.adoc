@@ -1,4 +1,4 @@
-= Cloudant's Location Tracker: Cutting edge mobile web app design with AngularJS
+= Make a mobile web app with AngularJS: Location Tracker Part 2
 
 NOTE: Sean please provide a good graphic. 
 
