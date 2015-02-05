@@ -1,0 +1,11 @@
+= Cloudant's Location Tracker: Cutting edge mobile web app design with AngularJS
+
+NOTE: Sean please provide a good graphic. 
+
+In Part 1 of this tutorial series, we http://cloudant.com/blog/link-to-part-1-blog[learned why location is so important to modern mobile apps] and https://github.com/cloudant-labs/location-tracker-couchapp/blob/master/tutorial/tutorial.adoc[how to build the basic functionality]. In Part 2 we take that code and transform it into a serious app using AngularJS.
+
+What is Angular and why are we using it? Glad you asked. As it states in the https://code.angularjs.org/1.2.26/docs/guide/introduction[Angular docs], AngularJS is a structural framework for dynamic web apps. It lets you use HTML as your template language and extends HTML’s syntax to express your application’s components clearly and succinctly. Not every app is a good fit for Angular. Angular was built with the CRUD application in mind. Luckily CRUD applications represent the majority of web applications. If you’re doing live, two-way data binding, Angular is a good fit. It excels in applications where the user changes data, and those changes necessitate an update to the user interface.
+
+In this simple tutorial, we don’t do much data binding, but you can imagine many cases where this would make sense in a mapping application. For example, if your application was supporting wildfire response, the map would change and alerts might get triggered when certain data events occurred. Or in a retail scenario, as a customer walked through a mall you could send them information tailored to the stores they were near, or attract shoppers away from competitors' stores and towards yours!
+
+=> *https://github.com/cloudant-labs/location-tracker-angular/blob/master/tutorial/tutorial.adoc[Location Tracker Tutorial: Part 2]*

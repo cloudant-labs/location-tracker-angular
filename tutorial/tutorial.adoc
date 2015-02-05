@@ -1,12 +1,12 @@
 image:https://cloudant.com/wp-content/themes/cloudant/images/ibm_cloudant.png["IBM Cloudant"]
 
-= Location Tracker Chapter 2: Angular.JS
+= Location Tracker Part 2: Angular.JS
 
 == Intro
 
-In chapter 1 of the Location Tracker tutorial, we learned how to use the HTML5 geolocation API to ask the web browser to share the device's location with us and save the location of a moving device -- whether that device represents a person, vehicle, or mobile sensor -- to Cloudant. We also learned how to take that data out of Cloudant and put it on a map. Those skills are important building blocks for any number of real-world apps you might develop, but the user interface left a lot to be desired. 
+In Part 1 of the Location Tracker tutorial, we learned how to use the HTML5 geolocation API to ask the web browser to share the device's location with us and save the location of a moving device -- whether that device represents a person, vehicle, or mobile sensor -- to Cloudant. We also learned how to take that data out of Cloudant and put it on a map. Those skills are important building blocks for any number of real-world apps you might develop, but the user interface left a lot to be desired. 
 
-In chapter 2, we'll take the functionality developed in chapter 1 and put it into a nicely polished http://en.wikipedia.org/wiki/Single-page_application[single-page app (SPA)] using the https://angularjs.org/[AngularJS] framework. This is _not_ a tutorial on AngularJS, nor a tutorial on how to create snazzy animated page effects, but you can study the code and learn how to do those on your own. The goal here is simply to take the design of our app to the next level using Angular. 
+In Part 2, we'll take the functionality developed in Part 1 and put it into a nicely polished http://en.wikipedia.org/wiki/Single-page_application[single-page app (SPA)] using the https://angularjs.org/[AngularJS] framework. This is _not_ a tutorial on AngularJS, nor a tutorial on how to create snazzy animated page effects, but you can study the code and learn how to do those on your own. The goal here is simply to take the design of our app to the next level using Angular. 
 
 What is Angular and why are we using it? Glad you asked. As it states in the https://code.angularjs.org/1.2.26/docs/guide/introduction[Angular docs], AngularJS is a structural framework for dynamic web apps. It lets you use HTML as your template language and extends HTML's syntax to express your application's components clearly and succinctly. Not every app is a good fit for Angular. Angular was built with the CRUD application in mind. Luckily CRUD applications represent the majority of web applications. If you're doing live, two-way data binding, Angular is a good fit. It excels in applications where the user changes data, and those changes necessitate an update to the user interface. 
 
@@ -14,16 +14,17 @@ In this simple tutorial, we don't do much data binding, but you can imagine many
 
 == Getting the code
 
-In this chapter, we won't step through the code as slowly as in chapter one, having you write and test a piece at a time. Instead, we'll have you download and peruse the code all at once, and explain it as a whole. Because no functionality has changed -- the code around capturing and saving location data is the same. We are simply re-organizing code into the AngularJS framework and adding UIX richness.
+In this chapter, we won't step through the code as slowly as in Part one, having you write and test a piece at a time. Instead, we'll have you download and peruse the code all at once, and explain it as a whole. Because no functionality has changed -- the code around capturing and saving location data is the same. We are simply re-organizing code into the AngularJS framework and adding UIX richness.
 
 All the code for this tutorial can be forked from GitHub from https://github.com/cloudant-labs/location-tracker-couchapp[this repository]. To download the code to your computer, run this from the command line:
 
 [source,bash]
 git clone https://github.com/cloudant-labs/location-tracker-angular.git
 
-****
-NOTE: If you are new to GitHub, https://help.github.com/articles/set-up-git/[get set up with these instructions]. 
-**** 
+[NOTE]
+====
+If you are new to GitHub, https://help.github.com/articles/set-up-git/[get set up with these instructions]. 
+====
 
 == Angular application overview
 
@@ -36,9 +37,10 @@ The way an Angular app gets initialized is by including the Angular Javascript c
 
 The value of the `ng-app` attribute is the module to use. And this is found in the Javascript file `app.js`, which was also included in the web page (and found in the `scripts` directory. App.js is the heart of any Angular app. As stated earlier, this is not a standalone Angular tutorial, so we'll just hit the high points of how functionality is laid out in the app. 
 
-****
-NOTE: Some good AngularJS tutorials are https://docs.angularjs.org/tutorial/[the official one], http://campus.codeschool.com/courses/shaping-up-with-angular-js/intro[Shaping up with Angular.JS] and  http://www.revillweb.com/tutorials/angularjs-in-30-minutes-angularjs-tutorial/[Learn AngularJS in 30 minutes]
-****
+[NOTE]
+====
+Some good AngularJS tutorials are https://docs.angularjs.org/tutorial/[the official one], http://campus.codeschool.com/courses/shaping-up-with-angular-js/intro[Shaping up with Angular.JS] and  http://www.revillweb.com/tutorials/angularjs-in-30-minutes-angularjs-tutorial/[Learn AngularJS in 30 minutes]
+====
 
 Looking at `app.js` a few main concepts stick out:
 
@@ -109,11 +111,11 @@ For example, the `/welcome` route inserts `location-welcome.html`. We're only in
 
 == Controllers
 
-This is where the real action is. All the controllers are described in Table 1, and the graphic below depicts their interaction. The welcome route presents the introductory UI that directs the user to activate the `/tracking` route, which runs the `locationTrackingController` controller, which begins capturing device locations. Looking at the code for that controller, which starts with `.controller('locationTrackingController'...`, you see that we create a map that shows the user where they are (note that if the device you were tracking didn't have a human being in front of it, you would surely skip this part). Then you'll eventually come across the function `doWatch` in that controller. This function will be familiar to you from chapter 1 of the tutorial. Except for some user interface manipulation, the code and functionality is the same -- we are taking the location given to us by the device and saving it to a local http://pouchdb.com[PouchDB] database. In addition to running the code in `locationTrackingController`, the `/tracking` route also injected HTML from the `location-tracking.html` file, which allows the user to click on a *_Stop and Save data to IBM Cloudant_* button when they are done collecting a series of locations. 
+This is where the real action is. All the controllers are described in Table 1, and the graphic below depicts their interaction. The welcome route presents the introductory UI that directs the user to activate the `/tracking` route, which runs the `locationTrackingController` controller, which begins capturing device locations. Looking at the code for that controller, which starts with `.controller('locationTrackingController'...`, you see that we create a map that shows the user where they are (note that if the device you were tracking didn't have a human being in front of it, you would surely skip this part). Then you'll eventually come across the function `doWatch` in that controller. This function will be familiar to you from Part 1 of the tutorial. Except for some user interface manipulation, the code and functionality is the same -- we are taking the location given to us by the device and saving it to a local http://pouchdb.com[PouchDB] database. In addition to running the code in `locationTrackingController`, the `/tracking` route also injected HTML from the `location-tracking.html` file, which allows the user to click on a *_Stop and Save data to IBM Cloudant_* button when they are done collecting a series of locations. 
 
-The *_Stop and Save data to IBM Cloudant_* button activates the `/savedata` route, which runs  `locationTrackingSaveDataController`. The code for that controller, which starts with `.controller('locationTrackingSaveDataController'...`, runs some cool page animation effects and replicates our local PouchDB database to Cloudant. This is functionally equivalent to the `saveToServer` function in chapter 1. When database replication is finished, the controller automatically redirects to either a success or error UI. 
+The *_Stop and Save data to IBM Cloudant_* button activates the `/savedata` route, which runs  `locationTrackingSaveDataController`. The code for that controller, which starts with `.controller('locationTrackingSaveDataController'...`, runs some cool page animation effects and replicates our local PouchDB database to Cloudant. This is functionally equivalent to the `saveToServer` function in Part 1. When database replication is finished, the controller automatically redirects to either a success or error UI. 
 
-If the process was successful, we see some metadata about how many documents were written to the database, and we get an option to see a map of all the location data saved in the Cloudant database, just like we did at the end of chapter 1. 
+If the process was successful, we see some metadata about how many documents were written to the database, and we get an option to see a map of all the location data saved in the Cloudant database, just like we did at the end of Part 1. 
 
 .Angular routes
 [cols="2,2,2,2,2,2,2", frame="topbot"]
@@ -122,7 +124,7 @@ If the process was successful, we see some metadata about how many documents wer
 |*templateUrl* |location-welcome.html |location-tracking.html |location-savedata.html |location-success.html |tutorial2-map.html |location-error.html 
 |*controller* |n/a |locationTrackingController |locationTrackingSaveDataController |locationTrackingSuccessController |mapResultController |locationTrackingErrorController
 |*description* |static introductory message |captures device location in PouchDB while showing current location on a map |Saves location data to Cloudant by replicating from the local PouchDB to a remote Cloudant database account |Shows metadata about the successful replication |Shows a map of all location data in the database |Shows metadata about a failed replication
-| |image:welcome_button_sm.png[] |image:graphics/tracking_sm.png[] |image:graphics/saving_sm.png[] |image:success_sm.png[] |image:graphics/map_sm.png[] |
+|  |image:graphics/welcome_button_sm.png[] |image:graphics/tracking_sm.png[] |image:graphics/saving_sm.png[] |image:graphics/success_sm.png[] |image:graphics/map_sm.png[] |
 |=====
 
 
@@ -130,6 +132,6 @@ If the process was successful, we see some metadata about how many documents wer
 
 == Conclusion
 
-This tutorial has shown that you can take functional, but bare tutorial code and transform it into a highly polished application with a little background in AngularJS. By comparing the code in chapters 1 and 2 you can also begin to see a possible workflow where a core Javascript developer might work on purely functional elements, while a front-end developer worked on the user interface. In fact, that's one of the benefits of AngularJS. Controllers separate out the data processing and database access from the "view" or front-end code, so that teams can be more productive working together in parallel. Therefore the lesson of this tutorial is less about how to write an AngularJS app, and more about how to use a web development framework to make your team more efficient and productive. 
+This tutorial has shown that you can take functional, but bare tutorial code and transform it into a highly polished application with a little background in AngularJS. By comparing the code in Parts 1 and 2 you can also begin to see a possible workflow where a core Javascript developer might work on purely functional elements, while a front-end developer worked on the user interface. In fact, that's one of the benefits of AngularJS. Controllers separate out the data processing and database access from the "view" or front-end code, so that teams can be more productive working together in parallel. Therefore the lesson of this tutorial is less about how to write an AngularJS app, and more about how to use a web development framework to make your team more efficient and productive. 
 
-In the next chapter, we'll focus on another aspect of taking the Location Tracker tutorial app closer to production quality -- securing authentication credentials. We'll leave the  couchapp deployment methodology behind and add a Node.js middleware layer to the app so that client code doesn't contain database credentials. 
+In the next Part , we'll focus on another aspect of taking the Location Tracker tutorial app closer to production quality -- securing authentication credentials. We'll leave the  couchapp deployment methodology behind and add a Node.js middleware layer to the app so that client code doesn't contain database credentials. 
