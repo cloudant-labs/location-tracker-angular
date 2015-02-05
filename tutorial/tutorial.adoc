@@ -155,9 +155,9 @@ Directives are helpful in that they attach a specified behavior to that DOM elem
 
 In order to modify the DOM we use the `link` option. `link` takes a function with the following, `function link(scope, element, attrs) { ... }`. Let's break things down:
 
-`scope` is an Angular scope object.
-`element` is the jqLite-wrapped element that this directive matches.
-`attrs` is a hash object with key-value pairs of normalized attribute names and their corresponding attribute values.
+*  `scope` is an Angular scope object.
+*  `element` is the jqLite-wrapped element that this directive matches.
+*  `attrs` is a hash object with key-value pairs of normalized attribute names and their corresponding attribute values.
 
 By taking advantage of a custom directive, we can take advantage of the $animate service to handle the transition animations when `enter` and `leave` hooks are triggered. We're using javascript animations using velocity.js to allow for a bit more fine grained control over nested elements, particularly when `leave` is triggered.
 
