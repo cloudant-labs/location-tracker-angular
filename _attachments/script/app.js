@@ -7,7 +7,8 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
 
 .value("map", {})
     .value("watchID", null)
-    .value("remotedb", 'https://USERNAME:PASSWORD@USERNAME.cloudant.com/locationtracker')
+	.value("remotedb", 'https://rajsingh:genjisan@rajsingh.cloudant.com/locationtracker')
+	// .value("remotedb", 'https://USERNAME:PASSWORD@USERNAME.cloudant.com/locationtracker')
     .value("num", 0)
     .value("successMessage", {})
     .value("errorMessage", "error")
@@ -100,7 +101,8 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
 
             /* store geolocation in an object to */
             geoLoc = navigator.geolocation;
-            watchID = geoLoc.watchPosition(doWatch, watchError);
+			var watchOptions = {maximumAge: 0, timeout: 10000, enableHighAccuracy:true};
+            watchID = geoLoc.watchPosition(doWatch, watchError, watchOptions);
 
             /* leaflet events */
             mapTracker.on('locationfound', onLocationFound);
