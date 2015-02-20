@@ -1,6 +1,7 @@
 image:https://cloudant.com/wp-content/themes/cloudant/images/ibm_cloudant.png["IBM Cloudant"]
 
 = Location Tracker Part 2: Angular.JS
+_Make a single-page mobile web app, with AngularJS_
 
 == Intro
 
@@ -168,4 +169,4 @@ The last thing to mention with animations is that there are callbacks in both `e
 
 This tutorial has shown that you can take functional, but bare tutorial code and transform it into a highly polished application with a little background in AngularJS. By comparing the code in Parts 1 and 2 you can also begin to see a possible workflow where a core Javascript developer might work on purely functional elements, while a front-end developer worked on the user interface. In fact, that's one of the benefits of AngularJS. Controllers separate out the data processing and database access from the "view" or front-end code, so that teams can be more productive working together in parallel. Therefore the lesson of this tutorial is less about how to write an AngularJS app, and more about how to use a web development framework to make your team more efficient and productive. 
 
-In the next Part , we'll focus on another aspect of taking the Location Tracker tutorial app closer to production quality -- securing authentication credentials. We'll leave the  couchapp deployment methodology behind and add a Node.js middleware layer to the app so that client code doesn't contain database credentials. 
+In Part 3, we'll focus on another aspect of taking the Location Tracker tutorial app closer to production quality adding a middle tier to better manage users and other moving things. We'll leave the couchapp deployment methodology behind and add a Node.js middleware layer to the app so that client code doesn't contain database credentials, and we have a more flexible set up to add other cool processing at the middle tier.
