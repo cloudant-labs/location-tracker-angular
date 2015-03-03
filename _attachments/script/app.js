@@ -7,8 +7,7 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
 
 .value("map", {})
     .value("watchID", null)
-	.value("remotedb", 'https://rajsingh:genjisan@rajsingh.cloudant.com/locationtracker')
-	// .value("remotedb", 'https://USERNAME:PASSWORD@USERNAME.cloudant.com/locationtracker')
+    .value("remotedb", 'https://USERNAME:PASSWORD@USERNAME.cloudant.com/locationtracker')
     .value("num", 0)
     .value("successMessage", {})
     .value("errorMessage", "error")
@@ -101,7 +100,11 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
 
             /* store geolocation in an object to */
             geoLoc = navigator.geolocation;
-			var watchOptions = {maximumAge: 0, timeout: 10000, enableHighAccuracy:true};
+            var watchOptions = {
+                maximumAge: 0,
+                timeout: 10000,
+                enableHighAccuracy: true
+            };
             watchID = geoLoc.watchPosition(doWatch, watchError, watchOptions);
 
             /* leaflet events */
@@ -132,7 +135,7 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
         lc.start();
     }
 
-    /* geoLoc.watchPosition event handler */
+    /* geoLoc.watchPosition event handler */
     function doWatch(position) {
         var lon = Number(Math.round(position.coords.longitude + 'e' + 4) + 'e-' + 4);
         var lat = Number(Math.round(position.coords.latitude + 'e' + 4) + 'e-' + 4);
@@ -173,10 +176,10 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
             }
         };
 
-        /* post object to db */
-        db.post(coord, function callback(err, response) {
+        /* PUT object to db */
+        db.put(coord, position.timestamp.toString(), function callback(err, response) {
             if (err) {
-                alert('POST ERROR: ' + err);
+                alert('PUT ERROR: ' + err);
             }
 
             /* get doc and update lat + lon text in the view */
@@ -190,7 +193,7 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
         });
     }
 
-    /* geoLoc.watchPosition event error handler */
+    /* geoLoc.watchPosition event error handler */
     function watchError(err) {
         $('.longitude-coordinate, .latitude-coordinate').text("permission denied...");
         alert('Error' + err.code + ' msg: ' + err.message);
@@ -262,6 +265,7 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
     $scope.transLeave = function() {};
 })
 
+
 .controller('locationTrackingErrorController', function($scope, errorMessage) {
     $scope.error_message = errorMessage;
 
@@ -271,97 +275,112 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
 
 
 .controller('mapResultController', function($scope, pouchResult) {
-        var mapResult = {};
+    var mapResult = {};
 
-        /* triggered from velocity callback within the animation module `enter` hook */
-        $scope.transEnter = function() {
-            var db = pouchResult;
+    /* triggered from velocity callback within the animation module `enter` hook */
+    $scope.transEnter = function() {
+        var db = pouchResult;
+        var _len;
 
-            db.changes({
-                include_docs: true
-            }).on('change', updateMovingLayer);
+        // get the length of docs and store it in _len
+        db.info(function(err, info) {
+            _len = info.doc_count;
+        });
 
-            /* instantiate Leaflet map */
-            mapResult = new L.Map('mapResult');
+        // use alldocs to get the object rows, then run a loop to draw on the map.
+        db.allDocs({
+            include_docs: true,
+            endkey: "_"
+        }, function(err, response) {
+            for (var i = 0; i < _len - 1; i++) {
+                updateMovingLayer(response.rows[i].doc);
+            };
+        })
 
-            L.tileLayer('https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png', {
-                maxZoom: 20,
-                attribution: 'Map data &copy; ' +
-                    '<a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-                    '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-                detectRetina: true,
-                id: 'examples.map-20v6611k'
-            }).addTo(mapResult);
+        /* instantiate Leaflet map */
+        mapResult = new L.Map('mapResult');
 
-            var last_lat = 0;
-            var last_lon = 0;
+        L.tileLayer('https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png', {
+            maxZoom: 20,
+            attribution: 'Map data &copy; ' +
+                '<a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+            detectRetina: true,
+            id: 'examples.map-20v6611k'
+        }).addTo(mapResult);
 
-            var movementLayer = L.geoJson(null, {
-                pointToLayer: function(feature, latlng) {
-                    if (last_lat == 0) {
-                        last_lat = latlng.lat;
-                        last_lon = latlng.lng;
-                    }
+        var last_lat = 0;
+        var last_lon = 0;
 
-                    var pointA = [last_lat, last_lon];
-                    var pointB = [latlng.lat, latlng.lng];
-                    var pointList = [pointA, pointB];
+        var movementLayer = L.geoJson(null, {
+            pointToLayer: function(feature, latlng) {
 
+                // setup a default lat + lng coordinate
+                if (last_lat == 0) {
                     last_lat = latlng.lat;
                     last_lon = latlng.lng;
-
-                    var firstpolyline = new L.Polyline(pointList, {
-                        color: '#e5603d',
-                        weight: 4,
-                        opacity: 0.64,
-                        smoothFactor: 1
-                    });
-                    firstpolyline.addTo(mapResult);
-
-                    markeroptions = {
-                        icon: L.icon({
-                            iconUrl: 'script/images/marker-icon-blue.png',
-                            iconRetinaUrl: 'script/images/marker-icon-blue-2x.png',
-                            iconSize: [25, 41],
-                            iconAnchor: [10, 10],
-                            shadowURL: 'script/images/marker-icon-shadow.png',
-                            shadowRetinaURL: 'script/images/marker-icon-shadow-2x.png',
-                            shadowSize: [41, 41],
-                            shadowAnchor: [10, 10]
-                        })
-                    }
-                    return L.marker(latlng, markeroptions).bindPopup(
-                        '<span>Latitude&nbsp;&nbsp;</span>' + latlng.lat +
-                        '<br><span>Longitude&nbsp;&nbsp;</span>' + latlng.lng);
                 }
-            }).addTo(mapResult);
 
-            function updateMovingLayer(change) {
-                if (!change.doc._deleted && change.doc.type == 'Feature') {
-                    movementLayer.addData(change.doc);
-                    mapResult.fitBounds(movementLayer.getBounds());
+                // we store coordinates so that we can have a start and end point, or pointA and pointB 
+                var pointA = [last_lat, last_lon];
+                var pointB = [latlng.lat, latlng.lng];
+                var pointList = [pointA, pointB];
+
+                last_lat = latlng.lat;
+                last_lon = latlng.lng;
+
+                var firstpolyline = new L.Polyline(pointList, {
+                    color: '#e5603d',
+                    weight: 4,
+                    opacity: 0.64,
+                    smoothFactor: 1
+                });
+                firstpolyline.addTo(mapResult);
+
+                markeroptions = {
+                    icon: L.icon({
+                        iconUrl: 'script/images/marker-icon-blue.png',
+                        iconRetinaUrl: 'script/images/marker-icon-blue-2x.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [10, 10],
+                        shadowURL: 'script/images/marker-icon-shadow.png',
+                        shadowRetinaURL: 'script/images/marker-icon-shadow-2x.png',
+                        shadowSize: [41, 41],
+                        shadowAnchor: [10, 10]
+                    })
                 }
+                return L.marker(latlng, markeroptions).bindPopup(
+                    '<span>Latitude&nbsp;&nbsp;</span>' + latlng.lat +
+                    '<br><span>Longitude&nbsp;&nbsp;</span>' + latlng.lng);
             }
-        };
+        }).addTo(mapResult);
 
-        /* triggered from velocity callback within the animation module `enter` hook */
-        $scope.transLeave = function() {
-            mapResult.remove();
-        };
+        function updateMovingLayer(doc) {
+            movementLayer.addData(doc);
+            mapResult.fitBounds(movementLayer.getBounds());
+        }
+    };
 
-    })
+    /* triggered from velocity callback within the animation module `enter` hook */
+    $scope.transLeave = function() {
+        mapResult.remove();
+    };
 
-    /* local storage for tracking map */
-    .factory('pouchLocal', [function() {
-        var db = new PouchDB('localdb');
-        return db;
-    }])
+})
 
-    /* cloudant db storage for result map */
-    .factory('pouchResult', ["remotedb", function(remotedb) {
-        var db = new PouchDB(remotedb);
-        return db;
-    }])
+
+/* local storage for tracking map */
+.factory('pouchLocal', [function() {
+    var db = new PouchDB('localdb');
+    return db;
+}])
+
+
+/* cloudant db storage for result map */
+.factory('pouchResult', ["remotedb", function(remotedb) {
+    var db = new PouchDB(remotedb);
+    return db;
+}])
 
 
 /* Directive used on controller items to allow for multiple trans in/out */
@@ -388,6 +407,7 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
         }
     }
 ])
+
 
 /* animation module for running javascript transitions */
 .animation('.anim-page-transition-js',
