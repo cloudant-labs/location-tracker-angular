@@ -7,7 +7,7 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
 
 .value("map", {})
     .value("watchID", null)
-    .value("remotedb", 'https://USERNAME:PASSWORD@USERNAME.cloudant.com/locationtracker')
+    .value("remotedb", 'https://rajsingh:genjisan@rajsingh.cloudant.com/locationtracker')
     .value("num", 0)
     .value("successMessage", {})
     .value("errorMessage", "error")
@@ -383,7 +383,7 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
     };
     
     function handleError( response ) {
-        console.log("err");
+        console.log("err: "+JSON.stringify(response.data));
         return( response.data );
      };
  
