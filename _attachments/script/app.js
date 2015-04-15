@@ -279,23 +279,8 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
 
     /* triggered from velocity callback within the animation module `enter` hook */
     $scope.transEnter = function() {
-        var db = pouchResult;
-        var _len;
-
-        // get the length of docs and store it in _len
-        db.info(function(err, info) {
-            _len = info.doc_count;
-        });
-
-        // use alldocs to get the object rows, then run a loop to draw on the map.
-        db.allDocs({
-            include_docs: true,
-            endkey: "_"
-        }, function(err, response) {
-            for (var i = 0; i < _len - 1; i++) {
-                updateMovingLayer(response.rows[i].doc);
-            };
-        })
+        var db = pouchResult.$$state.value.docs;
+        var _len = db.length;
 
         /* instantiate Leaflet map */
         mapResult = new L.Map('mapResult');
@@ -356,9 +341,17 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
         }).addTo(mapResult);
 
         function updateMovingLayer(doc) {
+            // console.log(doc.properties.timestamp);
+            // console.log(doc.geometry.coordinates);
             movementLayer.addData(doc);
             mapResult.fitBounds(movementLayer.getBounds());
         }
+
+        /* Run loop to take docs and begin drawing map points*/
+        for (var i = 0; i < _len - 1; i++) {
+            updateMovingLayer(db[i]);
+        };
+
     };
 
     /* triggered from velocity callback within the animation module `enter` hook */
@@ -377,10 +370,40 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
 
 
 /* cloudant db storage for result map */
-.factory('pouchResult', ["remotedb", function(remotedb) {
-    var db = new PouchDB(remotedb);
-    return db;
+// .factory('pouchResult', ["remotedb", function(remotedb) {
+//     var db = new PouchDB(remotedb);
+//     return db;
+// }])
+/* cloudant db storage for result map */
+.factory('pouchResult', ['remotedb', '$http', function(remotedb, $http) {
+ 
+    function handleSuccess( response ) {
+        console.log(response.data);
+        return( response.data );
+    };
+    
+    function handleError( response ) {
+        console.log("err");
+        return( response.data );
+     };
+ 
+    var request = $http({
+        method: "post",
+        url: remotedb +'/_find',
+ 
+        data: {
+                "selector": {"properties.timestamp": {"$gt":1}},
+                "sort": [{"properties.timestamp": "asc"}],
+                // "limit": 400,
+                "skip": 0
+            }
+        }
+    );
+ 
+    return (request.then( handleSuccess, handleError));
 }])
+
+
 
 
 /* Directive used on controller items to allow for multiple trans in/out */
