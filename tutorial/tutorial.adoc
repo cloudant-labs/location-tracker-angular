@@ -17,7 +17,7 @@ In this simple tutorial, we don't do much data binding, but you can imagine many
 
 In this chapter, we won't step through the code as slowly as in Part one, having you write and test a piece at a time. Instead, we'll have you download and peruse the code all at once, and explain it as a whole. Because no functionality has changed -- the code around capturing and saving location data is the same. We are simply re-organizing code into the AngularJS framework and adding UIX richness.
 
-All the code for this tutorial can be forked from GitHub from https://github.com/cloudant-labs/location-tracker-couchapp[this repository]. To download the code to your computer, run this from the command line:
+All the code for this tutorial can be forked from GitHub from https://github.com/cloudant-labs/location-tracker-angular[this repository]. To download the code to your computer, run this from the command line:
 
 [source,bash]
 git clone https://github.com/cloudant-labs/location-tracker-angular.git
