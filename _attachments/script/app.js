@@ -1,20 +1,18 @@
 // create our angular app and inject ngAnimate and ui-router 
 // =============================================================================
+var u = 'https://' + window.location.host + '/locationtracker';
 angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
 
-
 /* VALUES */
-
 .value("map", {})
     .value("watchID", null)
-    .value("remotedb", 'https://USERNAME:PASSWORD@USERNAME.cloudant.com/locationtracker')
+    .value("remotedb", u)
     .value("num", 0)
     .value("successMessage", {})
     .value("errorMessage", "error")
 
 
 /* ROUTES */
-
 .config(['$routeProvider', function($routeProvider) {
 
     $routeProvider.
@@ -73,13 +71,14 @@ angular.module('locationTrackingApp', ['ngAnimate', 'ngRoute'])
         if (navigator.geolocation) {
 
             /* vars to pass into leaflet map object */
-            var osmUrl = 'https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png';
+          var at = 'pk.eyJ1IjoicmFqcnNpbmdoIiwiYSI6ImpzeDhXbk0ifQ.VeSXCxcobmgfLgJAnsK3nw';
+            var osmUrl = 'https://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token='+at;
             var osmAttrib = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
                 '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
                 'Imagery © <a href="http://mapbox.com">Mapbox</a>';
             var osm = new L.TileLayer(osmUrl, {
                 attribution: osmAttrib,
-                id: 'examples.map-i875mjb7'
+                id: 'mapbox.streets-basic'
             });
 
             /* instantiate Leaflet tracking map */
