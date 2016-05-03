@@ -140,7 +140,7 @@ If the process was successful, we see some metadata about how many documents wer
 |*templateUrl* |welcome.html |tracking.html |savedata.html |success.html |tutorial2-map.html |location-error.html 
 |*controller* |n/a |locationTrackingController |locationTrackingSaveDataController |locationTrackingSuccessController |mapResultController |locationTrackingErrorController
 |*description* |static introductory message |captures device location in PouchDB while showing current location on a map |Saves location data to Cloudant by replicating from the local PouchDB to a remote Cloudant database account |Shows metadata about the successful replication |Shows a map of all location data in the database |Shows metadata about a failed replication
-| |image:welcome_button_sm.png[] |image:graphics/tracking_sm.png[] |image:graphics/saving_sm.png[] |image:success_sm.png[] |image:graphics/map_sm.png[] |
+| |image:graphics/welcome_button_sm.png[] |image:graphics/tracking_sm.png[] |image:graphics/saving_sm.png[] |image:graphics/success_sm.png[] |image:graphics/map_sm.png[] |
 |=====
 
 
